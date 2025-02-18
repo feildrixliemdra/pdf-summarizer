@@ -2,6 +2,7 @@
 import { BackgroundBeamsWithCollision } from '@/components/ui/background-beams-with-collision';
 import { Button } from '@/components/ui/button';
 import { FileUpload } from '@/components/ui/file-upload';
+import { extractTextFromPDF } from '@/lib/pdfReader';
 import { Loader2 } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 
@@ -29,24 +30,26 @@ const PDFPage = () => {
 
     setError('');
     setSummary('');
-    const r = await setTimeout(() => {
-      console.log('Hello, World!');
-      setIsLoading(false);
-    }, 2000);
+    // const r = await setTimeout(() => {
+    //   console.log('Hello, World!');
+    //   setIsLoading(false);
+    // }, 2000);
 
-    return;
+    // return;
 
     try {
-      // const text = await extractTextFromPDF(files[0])
-
+      const text = await extractTextFromPDF(files[0]);
+      console.log(text);
       const response = await fetch('/api/summarizer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        // body: JSON.stringify({ text: text.substring(0, 10000) }),
+        body: JSON.stringify({ text: text.substring(0, 10000) }), // limit text to 10000 characters
       });
+
+      console.log('response: ', response);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
