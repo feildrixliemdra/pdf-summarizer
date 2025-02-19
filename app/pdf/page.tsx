@@ -3,6 +3,7 @@ import { BackgroundBeamsWithCollision } from '@/components/ui/background-beams-w
 import { Button } from '@/components/ui/button';
 import { FileUpload } from '@/components/ui/file-upload';
 import { extractTextFromPDF } from '@/lib/pdfReader';
+import { IconCopy } from '@tabler/icons-react';
 import { Loader2 } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 
@@ -14,7 +15,6 @@ const PDFPage = () => {
   const handleFileUpload = (files: File[]) => {
     setFiles(files);
     setError('');
-    console.log(files);
   };
 
   const handleAnalyze = useCallback(async () => {
@@ -30,15 +30,9 @@ const PDFPage = () => {
 
     setError('');
     setSummary('');
-    // const r = await setTimeout(() => {
-    //   console.log('Hello, World!');
-    //   setIsLoading(false);
-    // }, 2000);
-
-    // return;
-
     try {
       const text = await extractTextFromPDF(files[0]);
+      setSummary(text);
       console.log(text);
       const response = await fetch('/api/summarizer', {
         method: 'POST',
@@ -67,12 +61,12 @@ const PDFPage = () => {
     }
   }, [files]);
   return (
-    <BackgroundBeamsWithCollision className="min-h-screen">
-      <section className="container mx-auto z-10">
-        <div className="w-1/2 mx-auto bg-[#1A1A23] my-10 rounded-md  border-white border-[1px] p-8 flex flex-col justify-between gap-5 items-center">
+    <div className="min-h-screen">
+      <section className="container mx-auto ">
+        <div className="w-1/2 mx-auto bg-[#1A1A23] rounded-md  border-white border-[1px] p-8 flex flex-col justify-between gap-5 items-center my-20">
           <h1 className="text-2xl font-semibold">Upload your PDF</h1>
           <div className="w-full max-w-4xl mx-auto min-h-96 border border-dashed bg-white dark:bg-black border-neutral-200 dark:border-neutral-800 rounded-lg">
-            <FileUpload onChange={handleFileUpload} />
+            <FileUpload onChange={(file) => handleFileUpload([file])} />
           </div>
 
           {error && (
@@ -92,9 +86,30 @@ const PDFPage = () => {
             )}
           </Button>
         </div>
+
+        {summary && (
+          <div className="w-1/2 mx-auto bg-[#1A1A23] rounded-md border-white border-[1px] p-8 mb-24">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Document Summary</h2>
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(summary);
+                }}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-white"
+              >
+                <IconCopy className="h-4 w-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+            <div className="prose prose-invert max-w-none">
+              <p className="text-gray-300 leading-relaxed">{summary}</p>
+            </div>
+          </div>
+        )}
       </section>
-    </BackgroundBeamsWithCollision>
+    </div>
   );
 };
-
 export default PDFPage;
