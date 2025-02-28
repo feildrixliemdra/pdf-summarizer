@@ -1,5 +1,4 @@
 'use client';
-import { BackgroundBeamsWithCollision } from '@/components/ui/background-beams-with-collision';
 import { Button } from '@/components/ui/button';
 import { FileUpload } from '@/components/ui/file-upload';
 import { extractTextFromPDF } from '@/lib/pdfReader';
