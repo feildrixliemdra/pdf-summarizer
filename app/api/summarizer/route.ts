@@ -30,12 +30,11 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const error = await response.json();
-      console.log('error: ', error);
-
       throw new Error(error.error.message || 'failed to summarize document');
     }
 
     const data = await response.json();
+    console.log('data: ', data.choices[0].message.content);
 
     return NextResponse.json({
       summary: data.choices[0].message.content,
