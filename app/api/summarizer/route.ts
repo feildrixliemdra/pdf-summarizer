@@ -1,5 +1,11 @@
 import { handleAPIError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: `${process.env.DEEPSEEK_API_KEY}`,
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,31 +16,25 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'user',
-            content: `Please summarize this document in clear, concise bullet points. Focus on key findings, main arguments, and critical data. Document content: ${text}`,
-          },
-        ],
-        temperature: 0.7,
-      }),
+    const response = await openai.chat.completions.create({
+      messages: [
+        {
+          role: 'system',
+          content: `You are a helpful assistant that summarizes text in clear and concise bullet points.`,
+        },
+        {
+          role: 'user',
+          content: `Please summarize this document in clear, concise bullet points. Focus on key findings, main arguments, and critical data. Document content: ${text}`,
+        },
+      ],
+      model: 'deepseek-chat',
+      temperature: 1,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error.message || 'failed to summarize document');
+    if (!response.choices[0].message.content) {
+      throw new Error('Failed to summarize document: No content returned');
     }
 
-    const data = await response.json();
-    console.log('data: ', data.choices[0].message.content);
+    const data = response;
 
     return NextResponse.json({
       summary: data.choices[0].message.content,
